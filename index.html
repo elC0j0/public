@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Test Català">
+    <title>Test d'Actualitat Lingüística</title>
+    
+    <style>
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --primary: #007aff;
+            --primary-active: #0056b3;
+            --success: #34c759;
+            --success-bg: #e8f8ec;
+            --danger: #ff3b30;
+            --danger-bg: #fde8e8;
+            --text-main: #1c1c1e;
+            --text-muted: #8e8e93;
+            --border-color: #e5e5ea;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Targetes principals */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            margin: auto 0;
+        }
+
+        /* Pantalla d'inici */
+        .start-icon {
+            width: 64px;
+            height: 64px;
+            background-color: rgba(0, 122, 255, 0.1);
+            color: var(--primary);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 28px;
+            line-height: 1.4;
+        }
+
+        /* Botons d'acció */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary);
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:active {
+            background-color: var(--primary-active);
+            transform: scale(0.98);
+        }
+
+        .btn-dark {
+            background-color: var(--text-main);
+        }
+
+        .btn-dark:active {
+            background-color: #000000;
+        }
+
+        /* Capçalera del Test */
+        .header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .tracker-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-score {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2b8a3e;
+            background-color: #d3f9d8;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* Barra de progrés */
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e5ea;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Pregunta i opcions */
+        .question-title {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 14px 16px;
+            background-color: #f8f9fa;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.3;
+        }
+
+        .option-btn:active {
+            transform: scale(0.99);
+        }
+
+        .option-badge {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Estats de resposta */
+        .option-btn.correct {
+            background-color: var(--success-bg) !important;
+            border-color: var(--success) !important;
+            color: #1b5e20 !important;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--danger-bg) !important;
+            border-color: var(--danger) !important;
+            color: #b71c1c !important;
+        }
+
+        .option-btn.correct-highlight {
+            background-color: var(--success-bg) !important;
+            border-color: var(--success) !important;
+            color: #1b5e20 !important;
+        }
+
+        /* Pantalla de Resum */
+        .results-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 60px;
+            background: linear-gradient(135deg, #007aff, #5856d6);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+        }
+
+        .results-score-text {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .results-score-percent {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .summary-list {
+            max-height: 260px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 16px 0 24px 0;
+            padding-right: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .summary-item {
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-item.is-correct {
+            background-color: var(--success-bg);
+            border-color: rgba(52, 199, 89, 0.3);
+        }
+
+        .summary-item.is-incorrect {
+            background-color: var(--danger-bg);
+            border-color: rgba(255, 59, 48, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Visualització adaptativa d'icones SVG simples */
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- 1. PANTALLA D'INICI -->
+        <div id="start-screen" class="card">
+            <div class="start-icon">
+                <svg class="icon" viewBox="0 0 24 24" style="width: 32px; height: 32px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            <h1 class="title">Test d'Actualitat Lingüística</h1>
+            <p class="subtitle">Setembre de 2026 • Periodisme UAB<br>40 preguntes amb ordre aleatori complet.</p>
+            <button onclick="startGame()" class="btn-primary">
+                <span>Començar el Test</span>
+                <svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </div>
+
+        <!-- 2. PANTALLA DE JOC -->
+        <div id="game-screen" class="hidden" style="flex-direction: column; justify-content: space-between; height: 100%;">
+            <div>
+                <div class="header-status">
+                    <span id="tracker" class="tracker-text">Pregunta 1 de 40</span>
+                    <span id="score-badge" class="badge-score">Encerts: 0</span>
+                </div>
+                <div class="progress-track">
+                    <div id="progress-bar" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin: auto 0;">
+                <h2 id="question-text" class="question-title"></h2>
+                <div id="options-container" class="options-list"></div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <button id="next-btn" onclick="nextQuestion()" class="btn-primary btn-dark hidden">
+                    <span id="next-btn-text">Següent Pregunta</span>
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. PANTALLA DE RESUM FINAL -->
+        <div id="results-screen" class="card hidden">
+            <h2 class="title">Resum del Test</h2>
+            <p class="subtitle" style="margin-bottom: 16px;">Resultat final obtingut</p>
+
+            <div class="results-score-circle">
+                <span id="final-score" class="results-score-text">0/40</span>
+                <span id="final-percent" class="results-score-percent">0%</span>
+            </div>
+
+            <p id="feedback-msg" style="text-align: center; font-weight: 600; font-size: 15px; margin-bottom: 16px;"></p>
+
+            <div id="summary-container" class="summary-list"></div>
+
+            <button onclick="startGame()" class="btn-primary">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                <span>Tornar a jugar</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // BBDD amb el text 100% integrat de les 40 preguntes
+        const rawDatabase = [
+            {
+                q: "1. Setembre de 2026. Continua la guerra...",
+                options: ["... dels EE.UU amb l'Iran.", "... dels EUA amb l'Iran.", "... dels USA amb l'Irán.", "... d'EE.UU amb Iran."],
+                correct: 1
+            },
+            {
+                q: "2. I també continua la guerra...",
+                options: ["... d'Ucrania.", "... d'Ucrània.", "... d'Ucraïna.", "... de Ucraina.", "... de Ucràina.", "... de Ucraïna."],
+                correct: 2
+            },
+            {
+                q: "3. Una sentència ferma obliga a reposar al seu lloc d'origen les pintures de...",
+                options: ["... Sijena.", "... Sigena.", "... Sixena."],
+                correct: 2
+            },
+            {
+                q: "4. Catalunya va salvar aquestes pintures, les va restaurar i les ha exposat durant anys en el museu d'art romànic més important del món. Aquest museu és...",
+                options: ["... el MNAC.", "... el mNAC.", "... l'MNAC.", "... el MuNAC."],
+                correct: 0
+            },
+            {
+                q: "5. Gairebé tots els mitjans de comunicació en català escriuen...",
+                options: ["... sisplau.", "... sis-plau.", "... siusplau.", "... si us plau."],
+                correct: 0
+            },
+            {
+                q: "6. En un mitjà de comunicació en català, el nom del primer ministre d'Israel cal escriure'l així:",
+                options: ["Benjamín Netanyahu", "Benjamin Netanyahu", "Benjamí Netanyahu"],
+                correct: 1
+            },
+            {
+                q: "7. Netanyahu, ja ho hem dit, és el primer ministre...",
+                options: ["... israelià.", "... israelita.", "... israelès."],
+                correct: 0
+            },
+            {
+                q: "8. Tria la frase correcta:",
+                options: [
+                    "«Ara mateix hi ha uns quants casos de presumpta corrupció que esquitxen el govern.»",
+                    "«Ara mateix hi ha uns quants cassos de pressumpta corrupció que esquitxen al govern.»",
+                    "«Ara mateix hi ha uns quants casos de pressunta corrupció que esquitxen al govern.»"
+                ],
+                correct: 0
+            },
+            {
+                q: "9. El 12 d'agost hi va haver un...",
+                options: ["... eclipse total de sol.", "... eclipsi total de sol.", "... eclipsis total de sol."],
+                correct: 1
+            },
+            {
+                q: "10. Els mitjans de comunicació en català escriuen el nom del guanyador del Tour de França 2026 de la manera següent:",
+                options: ["Tadej Pogacar", "Tadei Pogačar", "Tadej Pogàtxar"],
+                correct: 0
+            },
+            {
+                q: "11. El 6 d'agost va fer vuitanta-un anys de la primera bomba nuclear que es va llançar sobre...",
+                options: ["... Nagassaki.", "... Nagasaki.", "... Hiroshima."],
+                correct: 2
+            },
+            {
+                q: "12. El 12 de juliol va morir a Vimbodí i Poblet l'últim membre d'una de les nissagues literàries barcelonines més destacades del darrer segle (notícia en català):",
+                options: ["Luis Goytisolo", "Lluís Goytisolo", "Lluis Goytisolo"],
+                correct: 0
+            },
+            {
+                q: "13. Qui hi ha al capdavant de la conselleria de Política Lingüística de la Generalitat de Catalunya?",
+                options: ["Sònia Hernández", "Francesc Xavier Vila", "Núria Parlon", "Sílvia Paneque"],
+                correct: 1
+            },
+            {
+                q: "14. Quina és la frase correcta?",
+                options: ["«Extradeixen el detingut.»", "«Extradiuen el detingut.»", "«Extraditen el detingut.»"],
+                correct: 0
+            },
+            {
+                q: "15. Gentilici de la tennista Laura Badosa, nascuda a Begur:",
+                options: ["begurenca", "begurana", "begurina", "beguresa"],
+                correct: 0
+            },
+            {
+                q: "16. Donald Trump és el president...",
+                options: ["... estatunidenc.", "... estatunitenc.", "... nord-americà."],
+                correct: 0
+            },
+            {
+                q: "17. En un mitjà de Tortosa ha sortit publicada la notícia «Es complixen noranta anys de l'aixecament militar». La forma verbal complixen és estàndard?",
+                options: ["Sí", "No"],
+                correct: 0
+            },
+            {
+                q: "18. En un mitjà de Tortosa s'ha escrit la frase «La nit del 17 de juliol de 1936 el president de la Generalitat, Lluís Companys, va convocar als representants de les forces polítiques i sindicals per informar-los de la situació». La preposició a és estàndard en la frase esmentada?",
+                options: ["Sí", "No"],
+                correct: 1
+            },
+            {
+                q: "19. En un mitjà de Sabadell ha sortit publicada la notícia «Es cumpleixen noranta anys de l'aixecament militar». La forma verbal cumpleixen és estàndard?",
+                options: ["Sí", "No"],
+                correct: 1
+            },
+            {
+                q: "20. En un mitjà de Sabadell ha sortit publicada la notícia «La nit del 17 de juliol de 1936 el president de la Generalitat, Lluís Companys, va convocar als representants de les forces polítiques i sindicals per informar-los de la situació». La preposició a és estàndard en la frase esmentada?",
+                options: ["Sí", "No"],
+                correct: 1
+            },
+            {
+                q: "21. Quin d'aquests titulars està ben escrit?",
+                options: [
+                    "«Tall a l'altura de La Fatarella per un accident múltiple»",
+                    "«Tall a l'alçada de la Fatarella per un accident múltiple»",
+                    "«Tall a l'altura de la Fatarella per un accident múltiple»"
+                ],
+                correct: 2
+            },
+            {
+                q: "22. Quin és el titular correcte?",
+                options: ["«Tall a la N-420 per un accident múltiple»", "«Tall a l'N-420 per un accident múltiple»"],
+                correct: 1
+            },
+            {
+                q: "23. Tria la frase correcta:",
+                options: [
+                    "La jugadora polonesa va guanyar a la italiana a la final.",
+                    "La jugadora polonesa va guanyar la italiana a la final."
+                ],
+                correct: 1
+            },
+            {
+                q: "24. A què es refereix la sigla TJUE?",
+                options: ["Tribunal de Justícia d'Espanya", "Tribunal de Justícia de la Unió Europea", "Tribunal de Justícia de l'Estat espanyol"],
+                correct: 1
+            },
+            {
+                q: "25. Què vol dir la sigla PLATER?",
+                options: [
+                    "Plataforma Territorial d'Entesa Republicana",
+                    "Pla Laboral i Tècnic per a les Energies Renovables",
+                    "Pla Territorial Sectorial per a la Implantació de les Energies Renovables"
+                ],
+                correct: 2
+            },
+            {
+                q: "26. Què vol dir FMI?",
+                options: ["Fons Monetari Internacional", "Fondo Monetari Internacional", "Fira Monetària Internacional"],
+                correct: 0
+            },
+            {
+                q: "27. Aquest estiu a l'Índia s'ha fet famós el...",
+                options: ["... Partit Popular de les Paneroles.", "... el Partit Juvenil dels Escarabats.", "... el Partit Socialista de les Paneroles."],
+                correct: 0
+            },
+            {
+                q: "28. Donald Trump diu que tard o d'hora aconseguirà el control de...",
+                options: ["Grenlàndia. (VilaWeb)", "Groenlàndia. (Catalunya Ràdio i RAC1)"],
+                correct: 0
+            },
+            {
+                q: "29. Omple el buit amb la paraula convenient: «L'església de Sant Domènec de Balaguer s'omple per dir ______ a l'escriptor Josep Vallverdú».",
+                options: ["adeu", "adéu"],
+                correct: 0
+            },
+            {
+                q: "30. Omple el buit amb la paraula convenient: «Si veus fum o foc, truca al 112. Informa______ a incendis.gencat.cat».",
+                options: ["'t", "-te'n", "-t'en"],
+                correct: 1
+            },
+            {
+                q: "31. Omple el buit amb la paraula convenient: «La presència de la llengua pròpia de Catalunya a les sales de cinema és lluny de la que va tenir el 2024, ______ es va arribar al 7,8 de quota de projeccions en català».",
+                options: ["en el que", "en què", "en que"],
+                correct: 1
+            },
+            {
+                q: "32. Omple el buit amb la paraula convenient: «La ______ d'Educació, Esther Niubó, ha declarat que es depuraran responsabilitats en relació amb les proves PISA».",
+                options: ["consellera", "Consellera"],
+                correct: 0
+            },
+            {
+                q: "33. S'acaben les obres d'estiu a la...",
+                options: ["... ronda de Dalt.", "... Ronda de Dalt.", "... Ronda de dalt."],
+                correct: 0
+            },
+            {
+                q: "34. Es va crear al juny de fa vuitanta-un anys:",
+                options: ["l'ONU", "la ONU", "l'Unicef"],
+                correct: 0
+            },
+            {
+                q: "35. El nom del president rus és...",
+                options: ["... agut: Vladimir", "... pla: Vladímir", "... esdrúixol: Vlàdimir"],
+                correct: 1
+            },
+            {
+                q: "36. Tria la frase correcta:",
+                options: [
+                    "«Va morir el dilluns passat a Mataró.»",
+                    "«Va morir dilluns passat a Mataró.»",
+                    "Les dues frases anteriors, a) i b), són correctes."
+                ],
+                correct: 1
+            },
+            {
+                q: "37. Tria la frase correcta:",
+                options: [
+                    "«Entre els projectes finançats, hi ha un munt que es destinen a tenir més turisme.»",
+                    "«Entre els projectes finançats, n'hi ha un munt que es destinen a tenir més turisme.»"
+                ],
+                correct: 1
+            },
+            {
+                q: "38. Tria la frase correcta:",
+                options: [
+                    "«Vaig aprofitar la Nit dels Museus per anar i us puc assegurar que la visita paga la pena.»",
+                    "«Vaig aprofitar la Nit dels Museus per anar-hi i us puc assegurar que la visita paga la pena.»",
+                    "Les dues frases anteriors, a) i b), són correctes."
+                ],
+                correct: 1
+            },
+            {
+                q: "39. Tria la frase correcta:",
+                options: [
+                    "«Més de 220.000 evacuats pel foc del sudoest de França.»",
+                    "«Més de 220.000 evacuats pel foc del sud-oest de França.»",
+                    "«Més de 220.000 evaquats pel foc del sud-oest de França.»"
+                ],
+                correct: 1
+            },
+            {
+                q: "40. Tria la frase correcta:",
+                options: [
+                    "«La taxa d'inflació a la zona euro puja a l'agost.»",
+                    "«Puja a l'agost la taxa d'inflació a la zona euro.»",
+                    "Les dues frases anteriors, a) i b), són correctes."
+                ],
+                correct: 2
+            }
+        ];
+
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        // Funció Fisher-Yates per aleatoritzar
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startGame() {
+            // Aleatoritzar preguntes I opcions de resposta
+            questions = shuffle(rawDatabase).map(qObj => {
+                const correctText = qObj.options[qObj.correct];
+                const shuffledOpts = shuffle(qObj.options);
+                return {
+                    q: qObj.q,
+                    options: shuffledOpts,
+                    correct: shuffledOpts.indexOf(correctText)
+                };
+            });
+
+            currentIndex = 0;
+            score = 0;
+            userAnswers = [];
+
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("results-screen").classList.add("hidden");
+            
+            const gameScreen = document.getElementById("game-screen");
+            gameScreen.classList.remove("hidden");
+            gameScreen.style.display = "flex";
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const currentQ = questions[currentIndex];
+            
+            // Actualitzar indicadors
+            document.getElementById("tracker").innerText = `Pregunta ${currentIndex + 1} de ${questions.length}`;
+            document.getElementById("score-badge").innerText = `Encerts: ${score}`;
+            
+            const pct = (currentIndex / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = `${pct}%`;
+
+            // Text pregunta
+            document.getElementById("question-text").innerText = currentQ.q;
+
+            // Opcions
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+
+            currentQ.options.forEach((optStr, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                
+                const letter = String.fromCharCode(97 + idx); // a, b, c...
+                btn.innerHTML = `
+                    <span class="option-badge">${letter}</span>
+                    <span style="flex: 1;">${optStr}</span>
+                `;
+
+                btn.onclick = () => selectOption(idx, btn);
+                container.appendChild(btn);
+            });
+
+            document.getElementById("next-btn").classList.add("hidden");
+        }
+
+        function selectOption(selectedIndex, btnEl) {
+            const currentQ = questions[currentIndex];
+            const allBtns = document.querySelectorAll("#options-container .option-btn");
+
+            // Bloquejar totes les opcions
+            allBtns.forEach(b => b.style.pointerEvents = "none");
+
+            const isCorrect = selectedIndex === currentQ.correct;
+
+            if (isCorrect) {
+                btnEl.classList.add("correct");
+                score++;
+            } else {
+                btnEl.classList.add("incorrect");
+                allBtns[currentQ.correct].classList.add("correct-highlight");
+            }
+
+            // Guardar historial
+            userAnswers.push({
+                q: currentQ.q,
+                userAnswer: currentQ.options[selectedIndex],
+                correctAnswer: currentQ.options[currentQ.correct],
+                isCorrect: isCorrect
+            });
+
+            document.getElementById("score-badge").innerText = `Encerts: ${score}`;
+
+            const nextBtn = document.getElementById("next-btn");
+            const nextText = document.getElementById("next-btn-text");
+
+            if (currentIndex === questions.length - 1) {
+                nextText.innerText = "Veure Resum Final";
+            } else {
+                nextText.innerText = "Següent Pregunta";
+            }
+
+            nextBtn.classList.remove("hidden");
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const gameScreen = document.getElementById("game-screen");
+            gameScreen.classList.add("hidden");
+            gameScreen.style.display = "none";
+
+            const resultsScreen = document.getElementById("results-screen");
+            resultsScreen.classList.remove("hidden");
+
+            const total = questions.length;
+            const pct = Math.round((score / total) * 100);
+
+            document.getElementById("final-score").innerText = `${score}/${total}`;
+            document.getElementById("final-percent").innerText = `${pct}%`;
+
+            let msg = "";
+            if (pct === 100) msg = "¡Excel·lent! Domini absolut del test.";
+            else if (pct >= 80) msg = "¡Molt bon resultat! Bon nivell d'actualitat.";
+            else if (pct >= 50) msg = "Aprovat. Pots millorar alguns detalls.";
+            else msg = "Cal repassar l'actualitat i la gramàtica.";
+
+            document.getElementById("feedback-msg").innerText = msg;
+
+            // Renderitzar resum
+            const summaryContainer = document.getElementById("summary-container");
+            summaryContainer.innerHTML = "";
+
+            userAnswers.forEach((ans, i) => {
+                const item = document.createElement("div");
+                item.className = `summary-item ${ans.isCorrect ? 'is-correct' : 'is-incorrect'}`;
+                
+                item.innerHTML = `
+                    <div style="font-weight: 700; margin-bottom: 4px;">${ans.q}</div>
+                    ${ans.isCorrect 
+                        ? `<div style="color: #2b8a3e; font-weight: 600;">✓ Resposta: ${ans.correctAnswer}</div>`
+                        : `<div style="color: #c92a2a; font-weight: 600;">✗ La teva resposta: ${ans.userAnswer}</div>
+                           <div style="color: #2b8a3e; font-weight: 600;">✓ Correcta: ${ans.correctAnswer}</div>`
+                    }
+                `;
+                summaryContainer.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
