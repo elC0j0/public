@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de Topònims en Català</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --primary-hover: #003d80;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --correct: #28a745;
+            --incorrect: #dc3545;
+            --border: #cccccc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .config-screen, .quiz-screen, .results-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 2px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover, .mode-btn.selected {
+            border-color: var(--primary);
+            background-color: #eef5ff;
+        }
+
+        .mode-btn h3 {
+            margin: 0 0 5px 0;
+            color: var(--primary);
+        }
+
+        .mode-btn p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .question-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            text-align: center;
+        }
+
+        .question-box span {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-box h2 {
+            margin: 10px 0 0 0;
+            font-size: 1.8rem;
+            color: #222;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media(min-width: 480px) {
+            .options-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .opt-btn {
+            background-color: #ffffff;
+            border: 2px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .opt-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background-color: #f0f7ff;
+        }
+
+        .opt-btn.correct {
+            background-color: #d4edda !important;
+            border-color: var(--correct) !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .opt-btn.incorrect {
+            background-color: #f8d7da !important;
+            border-color: var(--incorrect) !important;
+            color: #721c24;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-container input {
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .feedback {
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .score-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .score-card .big-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .review-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-item .bad {
+            color: var(--incorrect);
+            text-decoration: line-through;
+        }
+
+        .review-item .good {
+            color: var(--correct);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Examen de Topònims</h1>
+    <div class="subtitle">Preparació de Llengua Catalana — Grau en Periodisme</div>
+
+    <!-- PANTALLA DE CONFIGURACIÓ -->
+    <div id="config-screen" class="config-screen">
+        <h3>Tria la modalitat d'examen:</h3>
+        <div class="option-group">
+            <div class="mode-btn selected" onclick="selectMode('mc')" id="mode-mc">
+                <h3>1. Opció Múltiple (Tipus Test)</h3>
+                <p>Es mostra el nom en castellà i has de triar la forma correcta en català entre 4 opcions.</p>
+            </div>
+            <div class="mode-btn" onclick="selectMode('write')" id="mode-write">
+                <h3>2. Escriptura Directa</h3>
+                <p>Es mostra el nom en castellà i has d'escriure la forma correcta en català (atenció als accents!).</p>
+            </div>
+        </div>
+        <button class="btn" id="start-btn" onclick="startQuiz()">Comença l'Examen Completa</button>
+    </div>
+
+    <!-- PANTALLA DEL TEST -->
+    <div id="quiz-screen" class="quiz-screen hidden">
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div class="quiz-header">
+            <span id="question-count">Pregunta 1</span>
+            <span id="score-count">Acierts: 0</span>
+        </div>
+
+        <div class="question-box">
+            <span>Com es diu en català?</span>
+            <h2 id="es-name">Zaragoza</h2>
+        </div>
+
+        <!-- OPCIÓ MÚLTIPLE -->
+        <div id="mc-container" class="options-container">
+            <!-- Botons generats dinàmicament -->
+        </div>
+
+        <!-- ESCRIPTURA DIRECTA -->
+        <div id="write-container" class="input-container hidden">
+            <input type="text" id="write-input" placeholder="Escriu la forma en català..." autocomplete="off">
+            <button class="btn" id="submit-write-btn" onclick="checkWriteAnswer()">Comprova</button>
+        </div>
+
+        <div id="feedback" class="feedback hidden"></div>
+
+        <button id="next-btn" class="btn hidden" onclick="nextQuestion()">Següent Pregunta</button>
+    </div>
+
+    <!-- PANTALLA DE RESULTATS -->
+    <div id="results-screen" class="results-screen hidden">
+        <h2>Examen Finalitzat!</h2>
+        <div class="score-card">
+            <div>La teva nota final és:</div>
+            <div id="final-score" class="big-score">0 / 10</div>
+            <div id="score-details">Has encertat 0 preguntes.</div>
+        </div>
+
+        <h3>Resum d'errors:</h3>
+        <div id="review-list" class="review-list">
+            <!-- Llista d'errors -->
+        </div>
+
+        <button class="btn" onclick="restartQuiz()">Torna a fer l'Examen</button>
+    </div>
+</div>
+
+<script>
+    // Dades dels topònims actualitzades i ampliades (sense duplicats)
+    const toponimsData = [
+        // Bloque Aragó / La Franja inicial
+        { es: "Alcañiz", ca: "Alcanyís", distractors: ["Alcanyis", "Alcañis", "Alcanyés"] },
+        { es: "Caspe", ca: "Casp", distractors: ["Caspe", "Càsp", "Casps"] },
+        { es: "Mequinenza", ca: "Mequinensa", distractors: ["Mequinença", "Mequinenza", "Mequinénsa"] },
+        { es: "Monzón", ca: "Montsó", distractors: ["Monsó", "Monzón", "Montsó"] },
+        { es: "Huesca", ca: "Osca", distractors: ["Huesca", "Òsca", "Osk"] },
+        { es: "Zaragoza", ca: "Saragossa", distractors: ["Zaragoza", "Saragosa", "Saragòssa"] },
+        { es: "Teruel", ca: "Terol", distractors: ["Teruel", "Tèrol", "Teról"] },
+
+        // Noves incorporacions d'Aragó / Franja de Ponent
+        { es: "Albarracín", ca: "Albarrasí", distractors: ["Albarracín", "Albarrasin", "Albarrací"] },
+        { es: "Arañuel", ca: "Aranyó", distractors: ["Arañuel", "Aranyo", "Aranyól"] },
+        { es: "Barbastro", ca: "Barbastre", distractors: ["Barbastro", "Barbàstre", "Barbaster"] },
+        { es: "Benasque", ca: "Benasc", distractors: ["Benasque", "Benàsc", "Benas"] },
+        { es: "Benabarre", ca: "Benavarri", distractors: ["Benabarre", "Benavarri", "Benabarri"] },
+        { es: "Beceite", ca: "Beseit", distractors: ["Beceite", "Beseit", "Besait"] },
+        { es: "Calaceite", ca: "Calaceit", distractors: ["Calaceite", "Calaseit", "Calaceits"] },
+        { es: "Calatayud", ca: "Calataiud", distractors: ["Calatayud", "Calataiut", "Calatayu"] },
+        { es: "La Codoñera", ca: "La Codonyera", distractors: ["La Codoñera", "La Codonyera", "Codonyera"] },
+        { es: "La Fresneda", ca: "La Freixneda", distractors: ["La Fresneda", "La Freixeneda", "La Freixneda"] },
+        { es: "Mazaleón", ca: "Massalió", distractors: ["Mazaleón", "Massalio", "Massalión"] },
+        { es: "Nonaspe", ca: "Nonasp", distractors: ["Nonaspe", "Nonàsp", "Nonasps"] },
+        { es: "Peñarroya de Tastavins", ca: "Pena-roja de Tastavins", distractors: ["Peñarroya de Tastavins", "Penaroja de Tastavins", "Pena Roja de Tastavins"] },
+        { es: "Zaidín", ca: "Saidí", distractors: ["Zaidín", "Saidi", "Saidín"] },
+        { es: "San Esteban de Litera", ca: "Sant Esteve de Llitera", distractors: ["San Esteban de Litera", "Sant Esteve de Litera", "Sant Esteve de Llitera"] },
+        { es: "Sopeira", ca: "Soanyes", distractors: ["Sopeira", "Soanyas", "Soañes"] },
+        { es: "Tamarite de Litera", ca: "Tamarit de Llitera", distractors: ["Tamarite de Litera", "Tamarit de Litera", "Tamarit de Llitera"] },
+        { es: "Tarazona", ca: "Tarassona", distractors: ["Tarazona", "Tarassona", "Tarasona"] },
+        { es: "Torre de Arcas", ca: "Torredarques", distractors: ["Torre de Arcas", "Torre d'Arques", "Torredarques"] },
+        { es: "Valderrobres", ca: "Vallderoures", distractors: ["Valderrobres", "Valderoures", "Vallderrores"] },
+        { es: "Vencillón", ca: "Vensilló", distractors: ["Vencillón", "Vensillo", "Vencilló"] },
+        { es: "Chalamera", ca: "Xalamera", distractors: ["Chalamera", "Xalaméra", "Txalamera"] },
+
+        // Altres topònims d'Espanya i EUA
+        { es: "Algeciras", ca: "Algesires", distractors: ["Algeciras", "Algesires", "Algecires"] },
+        { es: "Almería", ca: "Almeria", distractors: ["Almería", "Almèria", "Alméria"] },
+        { es: "Cádiz", ca: "Cadis", distractors: ["Cádiz", "Càdis", "Càdiz"] },
+        { es: "Córdoba", ca: "Còrdova", distractors: ["Córdoba", "Còrdoba", "Cordova"] },
+        { es: "Málaga", ca: "Màlaga", distractors: ["Málaga", "Malaga", "Màlaga"] },
+        { es: "Sevilla", ca: "Sevilla", distractors: ["Sevilla", "Sevílla", "Sevilha"] },
+        { es: "Álava", ca: "Àlaba", distractors: ["Álava", "Àlava", "Alaba"] },
+        { es: "Vizcaya", ca: "Biscaia", distractors: ["Vizcaya", "Biscaya", "Biscàia"] },
+        { es: "Guipúzcoa", ca: "Guipúscoa", distractors: ["Guipúzcoa", "Guipuscoa", "Guipúscoia"] },
+        { es: "San Juan de Pie de Puerto", ca: "Sant Joan de Peu de Port", distractors: ["Sant Joan de Pie de Port", "Sant Joan del Peu del Port", "Sant Joan de Peu de Port"] },
+        { es: "San Sebastián", ca: "Sant Sebastià", distractors: ["San Sebastián", "Sant Sebastia", "Sant Sebastiá"] },
+        { es: "Vitoria", ca: "Vitòria", distractors: ["Vitoria", "Vitòria", "Vitória"] },
+        { es: "Ávila", ca: "Àvila", distractors: ["Ávila", "Avila", "Àbila"] },
+        { es: "León", ca: "Lleó", distractors: ["León", "Lleo", "Lleó"] },
+        { es: "Salamanca", ca: "Salamanca", distractors: ["Salamanca", "Salamànca", "Salamànka"] },
+        { es: "Segovia", ca: "Segòvia", distractors: ["Segovia", "Segóvia", "Segovia"] },
+        { es: "Soria", ca: "Sòria", distractors: ["Soria", "Sória", "Sòria"] },
+        { es: "Valladolid", ca: "Valladolid", distractors: ["Valladolid", "Valldolid", "Valladolíd"] },
+        { es: "Arizona", ca: "Arizona", distractors: ["Arizòna", "Aritzona", "Arizona"] },
+        { es: "Georgia", ca: "Geòrgia", distractors: ["Georgia", "Geórgia", "Geòrgia"] },
+        { es: "Nebraska", ca: "Nebraska", distractors: ["Nebràska", "Nebraska", "Nebraxka"] },
+        { es: "Nevada", ca: "Nevada", distractors: ["Nevàda", "Nevada", "Nebada"] },
+        { es: "Pensilvania", ca: "Pensilvània", distractors: ["Pensilvania", "Pensilvánia", "Pensilvània"] }
+    ];
+
+    let currentMode = 'mc';
+    let quizQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let userErrors = [];
+
+    // Inicialització al carregar la pàgina
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('start-btn').innerText = `Comença l'Examen Completa (${toponimsData.length} preguntes)`;
+    });
+
+    function selectMode(mode) {
+        currentMode = mode;
+        document.getElementById('mode-mc').classList.toggle('selected', mode === 'mc');
+        document.getElementById('mode-write').classList.toggle('selected', mode === 'write');
+    }
+
+    function shuffleArray(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+        // Barrejar preguntes per a un examen diferent cada cop
+        quizQuestions = shuffleArray([...toponimsData]);
+        currentIndex = 0;
+        score = 0;
+        userErrors = [];
+
+        document.getElementById('config-screen').classList.add('hidden');
+        document.getElementById('results-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        if (currentMode === 'mc') {
+            document.getElementById('mc-container').classList.remove('hidden');
+            document.getElementById('write-container').classList.add('hidden');
+        } else {
+            document.getElementById('mc-container').classList.add('hidden');
+            document.getElementById('write-container').classList.remove('hidden');
+            
+            // Escultar la tecla Enter per enviar resposta
+            const writeInput = document.getElementById('write-input');
+            writeInput.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    checkWriteAnswer();
+                }
+            };
+        }
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = quizQuestions[currentIndex];
+        
+        // Actualitzar interfície
+        document.getElementById('es-name').innerText = q.es;
+        document.getElementById('question-count').innerText = `Pregunta ${currentIndex + 1} de ${quizQuestions.length}`;
+        document.getElementById('score-count').innerText = `Acierts: ${score}`;
+        
+        const progress = ((currentIndex) / quizQuestions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+
+        // Amagar feedback i botó següent
+        document.getElementById('feedback').classList.add('hidden');
+        document.getElementById('next-btn').classList.add('hidden');
+
+        if (currentMode === 'mc') {
+            setupMultipleChoice(q);
+        } else {
+            const input = document.getElementById('write-input');
+            input.value = '';
+            input.disabled = false;
+            document.getElementById('submit-write-btn').disabled = false;
+            input.focus();
+        }
+    }
+
+    function setupMultipleChoice(q) {
+        const container = document.getElementById('mc-container');
+        container.innerHTML = '';
+
+        // Crear 4 opcions: 1 correcta + 3 distractors
+        let options = [q.ca];
+        
+        // Afegir distractors propis o generals si no n'hi ha suficients
+        let extraDistractors = q.distractors ? [...q.distractors] : [];
+        while (options.length < 4) {
+            if (extraDistractors.length > 0) {
+                let d = extraDistractors.pop();
+                if (!options.includes(d)) options.push(d);
+            } else {
+                // Agafar una opció d'un altre topònim com a distractor
+                let randomQ = toponimsData[Math.floor(Math.random() * toponimsData.length)];
+                if (!options.includes(randomQ.ca)) options.push(randomQ.ca);
+            }
+        }
+
+        options = shuffleArray(options);
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkMCAnswer(opt, q.ca, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkMCAnswer(selected, correct, btn) {
+        const buttons = document.querySelectorAll('.opt-btn');
+        buttons.forEach(b => b.disabled = true);
+
+        if (selected === correct) {
+            btn.classList.add('correct');
+            score++;
+            showFeedback(true, "Correcte!");
+        } else {
+            btn.classList.add('incorrect');
+            buttons.forEach(b => {
+                if (b.innerText === correct) b.classList.add('correct');
+            });
+            userErrors.push({ es: quizQuestions[currentIndex].es, user: selected, correct: correct });
+            showFeedback(false, `Incorrecte. La forma correcta és: ${correct}`);
+        }
+
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function checkWriteAnswer() {
+        const input = document.getElementById('write-input');
+        const userText = input.value.trim();
+        const correct = quizQuestions[currentIndex].ca;
+
+        if (!userText) return;
+
+        input.disabled = true;
+        document.getElementById('submit-write-btn').disabled = true;
+
+        if (userText.toLowerCase() === correct.toLowerCase()) {
+            // Nota: Es manté estricte si es prefereix, o tolerant a majúscules/minúscules
+            if (userText === correct) {
+                score++;
+                showFeedback(true, "Molt bé! Resposta exacta.");
+            } else {
+                score++;
+                showFeedback(true, `Molt bé! (Atenció a les majúscules: ${correct})`);
+            }
+        } else {
+            userErrors.push({ es: quizQuestions[currentIndex].es, user: userText, correct: correct });
+            showFeedback(false, `Incorrecte. La forma correcta és: ${correct}`);
+        }
+
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function showFeedback(isCorrect, text) {
+        const fb = document.getElementById('feedback');
+        fb.innerText = text;
+        fb.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+        fb.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < quizQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('results-screen').classList.remove('hidden');
+
+        const total = quizQuestions.length;
+        const note = ((score / total) * 10).toFixed(1);
+        
+        document.getElementById('final-score').innerText = `${note} / 10`;
+        document.getElementById('score-details').innerText = `Has encertat ${score} de ${total} topònims.`;
+
+        const reviewList = document.getElementById('review-list');
+        reviewList.innerHTML = '';
+
+        if (userErrors.length === 0) {
+            reviewList.innerHTML = '<div style="text-align:center; color:green; padding:10px;"> Perfecte! No has comès cap error.</div>';
+        } else {
+            userErrors.forEach(err => {
+                const item = document.createElement('div');
+                item.className = 'review-item';
+                item.innerHTML = `
+                    <span><strong>${err.es}:</strong></span>
+                    <span><span class="bad">${err.user || '(en blanc)'}</span> &rarr; <span class="good">${err.correct}</span></span>
+                `;
+                reviewList.appendChild(item);
+            });
+        }
+    }
+
+    function restartQuiz() {
+        document.getElementById('results-screen').classList.add('hidden');
+        document.getElementById('config-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
