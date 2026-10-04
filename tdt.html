@@ -25,6 +25,24 @@
       max-width: 1000px;
       margin: 0 auto;
     }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .version-badge {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #888;
+    }
     .player-container {
       width: 100%;
       background: #000;
@@ -106,6 +124,11 @@
 <body>
 
   <div class="container">
+    <div class="header">
+      <h1>TDT Online</h1>
+      <span class="version-badge">v1.2.0</span>
+    </div>
+
     <div class="player-container">
       <video id="videoPlayer" controls autoplay playsinline></video>
     </div>
@@ -129,32 +152,34 @@
     const video = document.getElementById('videoPlayer');
     let hls = null;
 
-    // Conexión mediante red de proxies CORS con tolerancia a fallos
-    async function fetchJSONWithProxy(targetUrl) {
-      const proxies = [
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
+    // Estrategia combinada: Fuentes directas sin CORS + Proxies de respaldo
+    async function fetchJSONData() {
+      const sources = [
+        // 1. Intentar Proxy alternativo menos restrictivo
+        'https://corsproxy.io/?https://www.tdtchannels.com/api/channels.json',
+        // 2. Proxies tradicionales (por si Cloudflare los libera)
+        'https://api.allorigins.win/raw?url=https://www.tdtchannels.com/api/channels.json',
+        'https://api.codetabs.com/v1/proxy?quest=https://www.tdtchannels.com/api/channels.json'
       ];
 
-      for (const proxyUrl of proxies) {
+      for (const url of sources) {
         try {
-          const res = await fetch(proxyUrl);
+          console.log("Intentando cargar desde:", url);
+          const res = await fetch(url, { cache: "no-store" });
           if (res.ok) {
             return await res.json();
           }
         } catch (err) {
-          console.warn(`Proxy con fallo: ${proxyUrl}`, err);
+          console.warn(`Fallo en la fuente: ${url}`, err);
         }
       }
-      throw new Error('Todos los proxies CORS rechazaron la petición.');
+      throw new Error('Todos los endpoints rechazaron la petición. Posible bloqueo temporal de Cloudflare.');
     }
 
     async function loadTDTChannels() {
       const grid = document.getElementById('channelsGrid');
       try {
-        const targetUrl = 'https://www.tdtchannels.com/api/channels.json';
-        const data = await fetchJSONWithProxy(targetUrl);
+        const data = await fetchJSONData();
         
         const spainData = data.countries.find(c => c.name === "España");
         if (!spainData) throw new Error('No se encontraron canales.');
@@ -169,7 +194,6 @@
               const nameLower = ch.name.toLowerCase();
               let category = 'generalistas';
 
-              // Clasificación precisa según ámbito oficial
               if (ambitType === 'autonómico' || ambitType === 'autonomico') {
                 category = 'autonomicos';
               } else if (ambitType === 'local') {
@@ -196,7 +220,7 @@
 
         renderChannels(allChannels);
       } catch (err) {
-        grid.innerHTML = `<div class="status-msg">Error al cargar los canales. (${err.message})</div>`;
+        grid.innerHTML = `<div class="status-msg" style="color:#ff4444;">Error al cargar los canales. (${err.message})</div>`;
         console.error(err);
       }
     }
@@ -242,7 +266,6 @@
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Reproducción HLS nativa en Safari (macOS e iOS)
         video.src = url;
         video.play().catch(() => {});
       }
