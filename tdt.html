@@ -126,7 +126,7 @@
   <div class="container">
     <div class="header">
       <h1>TDT Online</h1>
-      <span class="version-badge">v1.4.0</span>
+      <span class="version-badge">v1.5.0</span>
     </div>
 
     <div class="player-container">
@@ -142,7 +142,7 @@
     </div>
 
     <div class="grid" id="channelsGrid">
-      <div class="status-msg">Cargando canales desde GitHub...</div>
+      <div class="status-msg">Cargando canales...</div>
     </div>
   </div>
 
@@ -152,19 +152,27 @@
     let hls = null;
 
     async function fetchJSONData() {
-      // Conexión directa al repositorio RAW de GitHub (Sin CORS ni Cloudflare)
-      const url = 'https://raw.githubusercontent.com/LaQuay/TDTChannels/master/channels.json';
+      // 1. URL oficial proporcionada (podría fallar por CORS en navegadores estrictos)
+      // 2. URL de GitHub Raw corregida a tv.json (Sin CORS)
+      // 3. Proxy como red de seguridad
+      const sources = [
+        'https://www.tdtchannels.com/lists/tv.json',
+        'https://raw.githubusercontent.com/LaQuay/TDTChannels/master/tv.json',
+        'https://corsproxy.io/?https://www.tdtchannels.com/lists/tv.json'
+      ];
 
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (res.ok) {
-          return await res.json();
-        } else {
-          throw new Error(`Error HTTP: ${res.status}`);
+      for (const url of sources) {
+        try {
+          console.log("Intentando cargar desde:", url);
+          const res = await fetch(url, { cache: "no-store" });
+          if (res.ok) {
+            return await res.json();
+          }
+        } catch (err) {
+          console.warn(`Fallo en la fuente: ${url}`, err);
         }
-      } catch (err) {
-        throw new Error('Fallo al conectar con el repositorio de GitHub.');
       }
+      throw new Error('No se pudo acceder a la lista de canales (Verifica la consola para detalles de CORS).');
     }
 
     async function loadTDTChannels() {
