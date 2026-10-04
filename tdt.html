@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="TDT Online">
   <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=TDT">
   
-  <title>TDT Online v3.1</title>
+  <title>TDT Online v3.2</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -178,6 +178,7 @@
       color: #aaa;
     }
 
+    /* Modal Styles */
     #setupModal {
       display: none;
       position: fixed;
@@ -199,7 +200,13 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    .modal-content h2 { margin-top: 0; font-size: 1.3rem; }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .modal-header h2 { margin: 0; font-size: 1.3rem; }
     .modal-content a { color: var(--accent); font-weight: bold; }
     textarea {
       width: 100%;
@@ -237,16 +244,18 @@
 
   <div id="setupModal">
     <div class="modal-content">
-      <h2>Configuración de Base de Datos</h2>
+      <div class="modal-header">
+        <h2>Base de Datos</h2>
+        <span class="version-badge">v3.2.0</span>
+      </div>
       <p style="font-size: 0.9rem; color: #ccc;">Abre los enlaces, pulsa "Seleccionar todo" (Cmd/Ctrl + A), copia y pega abajo.</p>
       
       <div id="jsonError" class="error-msg">Error: Revisa que ambos textos sean JSON válidos.</div>
       
-      <!-- Enlaces corregidos directamente al RAW de GitHub -->
-      <label style="font-size: 0.9rem;">1. Copia el texto crudo de <a href="https://raw.githubusercontent.com/LaQuay/TDTChannels/master/tv.json" target="_blank">TV.json</a> aquí:</label>
+      <label style="font-size: 0.9rem;">1. Copia el texto de <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">TV.json</a> aquí:</label>
       <textarea id="jsonInputTV" placeholder='Pega el contenido de la Televisión...'></textarea>
       
-      <label style="font-size: 0.9rem;">2. Copia el texto crudo de <a href="https://raw.githubusercontent.com/LaQuay/TDTChannels/master/radio.json" target="_blank">RADIO.json</a> aquí (Opcional):</label>
+      <label style="font-size: 0.9rem;">2. Copia el texto de <a href="https://www.tdtchannels.com/lists/radio.json" target="_blank">RADIO.json</a> aquí (Opcional):</label>
       <textarea id="jsonInputRadio" placeholder='Pega el contenido de la Radio...'></textarea>
       
       <button class="save-btn" onclick="saveJSONData()">Guardar y Cargar</button>
@@ -258,7 +267,7 @@
     <div class="header">
       <h1>TDT Online</h1>
       <div class="header-actions">
-        <span class="version-badge">v3.1.0</span>
+        <span class="version-badge">v3.2.0</span>
         <button class="settings-btn" onclick="openSetup()" title="Actualizar listas">⚙️</button>
       </div>
     </div>
