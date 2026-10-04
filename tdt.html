@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- Etiquetas para WebApp en iOS (iPad/iPhone) -->
+  <!-- Etiquetas PWA para iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TDT Online">
   <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=TDT">
   
-  <title>TDT Online</title>
+  <title>TDT Online v3</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -26,13 +26,15 @@
       background: var(--bg-color);
       color: var(--text);
       margin: 0;
-      padding: 20px;
-      padding-top: env(safe-area-inset-top, 20px);
+      padding: 15px;
+      padding-top: env(safe-area-inset-top, 15px);
     }
     .container {
       max-width: 1000px;
       margin: 0 auto;
     }
+    
+    /* Header y Navegación */
     .header {
       display: flex;
       justify-content: space-between;
@@ -64,6 +66,47 @@
       font-size: 0.8rem;
       color: #888;
     }
+
+    /* Controles (Modo y Categorías) */
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .mode-toggle {
+      display: flex;
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .mode-btn {
+      background: transparent;
+      color: var(--text);
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .mode-btn.active {
+      background: var(--accent);
+    }
+    .category-select {
+      flex-grow: 1;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      cursor: pointer;
+      min-width: 150px;
+    }
+
+    /* Reproductor */
     .player-container {
       width: 100%;
       background: #000;
@@ -77,60 +120,71 @@
       aspect-ratio: 16/9;
       display: block;
     }
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .filter-btn {
-      background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 18px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-    .filter-btn.active, .filter-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
+
+    /* Grid y Tarjetas */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
       gap: 12px;
     }
     .channel-card {
+      position: relative;
       background: var(--card-bg);
       border-radius: 10px;
-      padding: 12px 8px;
+      padding: 15px 8px 10px;
       text-align: center;
       cursor: pointer;
       border: 1px solid var(--border);
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      transition: transform 0.1s, border-color 0.1s;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
+    .channel-card:active {
+      transform: scale(0.96);
+    }
     .channel-card img {
-      max-width: 70px;
-      max-height: 45px;
+      max-width: 60px;
+      max-height: 40px;
       object-fit: contain;
       margin-bottom: 8px;
     }
     .channel-card span {
       display: block;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       width: 100%;
     }
     
+    /* Botón de Favorito */
+    .fav-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .status-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px;
+      color: #aaa;
+    }
+
+    /* Modal de Configuración */
     #setupModal {
       display: none;
       position: fixed;
@@ -140,35 +194,38 @@
       z-index: 1000;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
     }
     .modal-content {
       background: var(--card-bg);
-      padding: 25px;
+      padding: 20px;
       border-radius: 15px;
       max-width: 600px;
       width: 100%;
       border: 1px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
     }
-    .modal-content h2 { margin-top: 0; }
+    .modal-content h2 { margin-top: 0; font-size: 1.3rem; }
     .modal-content a { color: var(--accent); font-weight: bold; }
     textarea {
       width: 100%;
-      height: 150px;
+      height: 90px;
       background: #000;
       color: #0f0;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px;
+      padding: 8px;
       font-family: monospace;
-      margin: 15px 0;
+      margin: 8px 0 15px;
       resize: vertical;
+      font-size: 0.8rem;
     }
     .save-btn {
       background: var(--accent);
       color: white;
       border: none;
-      padding: 12px 20px;
+      padding: 12px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 1rem;
@@ -185,17 +242,21 @@
 </head>
 <body>
 
+  <!-- Modal de Configuración (TV y Radio) -->
   <div id="setupModal">
     <div class="modal-content">
-      <h2>Configuración de Canales</h2>
-      <p>1. Haz clic <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">AQUÍ</a> para abrir la lista oficial.</p>
-      <p>2. Selecciona todo el texto de esa página (Cmd/Ctrl + A) y cópialo.</p>
-      <p>3. Pega el contenido en la caja de abajo y pulsa Guardar.</p>
+      <h2>Configuración de Base de Datos</h2>
+      <p style="font-size: 0.9rem; color: #ccc;">Para evitar bloqueos, copia el texto de las listas oficiales.</p>
       
-      <div id="jsonError" class="error-msg">El texto pegado no es un JSON válido. Revisa que lo has copiado todo.</div>
-      <textarea id="jsonInput" placeholder='Pega aquí el contenido que empieza por {"version":...}'></textarea>
+      <div id="jsonError" class="error-msg">Error: Revisa que ambos textos sean JSON válidos.</div>
       
-      <button class="save-btn" onclick="saveJSONData()">Guardar y Cargar Canales</button>
+      <label style="font-size: 0.9rem;">1. Copia el texto de <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">TV.json</a> aquí:</label>
+      <textarea id="jsonInputTV" placeholder='Pega el contenido de la Televisión...'></textarea>
+      
+      <label style="font-size: 0.9rem;">2. Copia el texto de <a href="https://www.tdtchannels.com/lists/radio.json" target="_blank">RADIO.json</a> aquí (Opcional):</label>
+      <textarea id="jsonInputRadio" placeholder='Pega el contenido de la Radio...'></textarea>
+      
+      <button class="save-btn" onclick="saveJSONData()">Guardar y Cargar</button>
       <button class="save-btn" onclick="closeSetup()" style="background: transparent; border: 1px solid #333; margin-top: 10px;" id="cancelBtn">Cancelar</button>
     </div>
   </div>
@@ -204,8 +265,8 @@
     <div class="header">
       <h1>TDT Online</h1>
       <div class="header-actions">
-        <span class="version-badge">v2.1.0</span>
-        <button class="settings-btn" onclick="openSetup()" title="Actualizar canales">⚙️</button>
+        <span class="version-badge">v3.0.0</span>
+        <button class="settings-btn" onclick="openSetup()" title="Actualizar listas">⚙️</button>
       </div>
     </div>
 
@@ -213,28 +274,38 @@
       <video id="videoPlayer" controls autoplay playsinline></video>
     </div>
 
-    <div class="controls" id="categoryFilters">
-      <button class="filter-btn active" onclick="filterChannels('todos', this)">Todos</button>
-      <button class="filter-btn" onclick="filterChannels('generalistas', this)">Generalistas</button>
-      <button class="filter-btn" onclick="filterChannels('autonomicos', this)">Autonómicos</button>
-      <button class="filter-btn" onclick="filterChannels('informativos', this)">Informativos</button>
-      <button class="filter-btn" onclick="filterChannels('locales', this)">Locales</button>
+    <div class="controls-bar">
+      <div class="mode-toggle">
+        <button id="btnTV" class="mode-btn active" onclick="switchMode('tv')">TV</button>
+        <button id="btnRadio" class="mode-btn" onclick="switchMode('radio')">Radio</button>
+      </div>
+      
+      <select id="categorySelect" class="category-select" onchange="filterChannels()">
+        <option value="Favoritos">⭐ Favoritos</option>
+        <option value="Todos">Todos</option>
+        <!-- Las categorías oficiales se inyectarán aquí -->
+      </select>
     </div>
 
     <div class="grid" id="channelsGrid">
-      <div class="status-msg">Iniciando aplicación...</div>
+      <div class="status-msg">Cargando base de datos...</div>
     </div>
   </div>
 
   <script>
-    let allChannels = [];
+    let currentMode = 'tv'; // 'tv' o 'radio'
+    let dataTV = [];
+    let dataRadio = [];
+    let favorites = JSON.parse(localStorage.getItem('tdtFavorites')) || [];
+    
     const video = document.getElementById('videoPlayer');
     let hls = null;
 
+    // --- SISTEMA DE CONFIGURACIÓN ---
     function openSetup() {
       document.getElementById('setupModal').style.display = 'flex';
       document.getElementById('jsonError').style.display = 'none';
-      document.getElementById('cancelBtn').style.display = localStorage.getItem('tdtChannelsJSON') ? 'block' : 'none';
+      document.getElementById('cancelBtn').style.display = (localStorage.getItem('tdtTV') || localStorage.getItem('tdtRadio')) ? 'block' : 'none';
     }
 
     function closeSetup() {
@@ -242,122 +313,167 @@
     }
 
     function saveJSONData() {
-      const rawText = document.getElementById('jsonInput').value.trim();
+      const tvText = document.getElementById('jsonInputTV').value.trim();
+      const radioText = document.getElementById('jsonInputRadio').value.trim();
+      
       try {
-        const parsed = JSON.parse(rawText);
-        if (!parsed.countries) throw new Error("Falta la estructura correcta.");
+        if (tvText) {
+          const parsedTV = JSON.parse(tvText);
+          if (!parsedTV.countries) throw new Error();
+          localStorage.setItem('tdtTV', tvText);
+        }
+        if (radioText) {
+          const parsedRadio = JSON.parse(radioText);
+          if (!parsedRadio.countries) throw new Error();
+          localStorage.setItem('tdtRadio', radioText);
+        }
         
-        localStorage.setItem('tdtChannelsJSON', rawText);
         closeSetup();
-        document.getElementById('jsonInput').value = ''; 
-        processChannelsData(parsed);
+        document.getElementById('jsonInputTV').value = ''; 
+        document.getElementById('jsonInputRadio').value = '';
+        loadApp(); // Recargar datos en memoria
       } catch (err) {
         document.getElementById('jsonError').style.display = 'block';
       }
     }
 
     function loadApp() {
-      const cachedData = localStorage.getItem('tdtChannelsJSON');
-      if (cachedData) {
-        try {
-          processChannelsData(JSON.parse(cachedData));
-        } catch (e) {
-          openSetup(); 
+      const cachedTV = localStorage.getItem('tdtTV');
+      const cachedRadio = localStorage.getItem('tdtRadio');
+      
+      if (!cachedTV && !cachedRadio) {
+        openSetup();
+        return;
+      }
+
+      if (cachedTV) dataTV = extractChannels(JSON.parse(cachedTV));
+      if (cachedRadio) dataRadio = extractChannels(JSON.parse(cachedRadio));
+
+      switchMode(currentMode); // Renderizar modo actual
+    }
+
+    // --- PROCESAMIENTO DE DATOS ---
+    function extractChannels(data) {
+      const spainData = data.countries.find(c => c.name.toLowerCase() === "españa" || c.name.toLowerCase() === "spain") || data.countries[0];
+      if (!spainData || !spainData.ambits) return [];
+
+      let parsedList = [];
+      spainData.ambits.forEach(ambitObj => {
+        if (ambitObj.channels) {
+          ambitObj.channels.forEach(ch => {
+            if (ch.options && ch.options.length > 0) {
+              parsedList.push({
+                name: ch.name,
+                logo: ch.logo,
+                url: ch.options[0].url,
+                category: ambitObj.name || ambitObj.ambit // Extraer nombre oficial de categoría
+              });
+            }
+          });
         }
+      });
+      return parsedList;
+    }
+
+    // --- INTERFAZ Y RENDERIZADO ---
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnTV').classList.toggle('active', mode === 'tv');
+      document.getElementById('btnRadio').classList.toggle('active', mode === 'radio');
+      
+      const currentData = mode === 'tv' ? dataTV : dataRadio;
+      
+      if (currentData.length === 0) {
+        document.getElementById('channelsGrid').innerHTML = `<div class="status-msg">No hay datos de ${mode.toUpperCase()}. Abre los ajustes ⚙️ para cargarlos.</div>`;
+        document.getElementById('categorySelect').innerHTML = '<option value="Favoritos">⭐ Favoritos</option>';
+        return;
+      }
+
+      // Extraer categorías únicas manteniendo el orden oficial
+      const select = document.getElementById('categorySelect');
+      const uniqueCategories = [...new Set(currentData.map(ch => ch.category))];
+      
+      select.innerHTML = '<option value="Favoritos">⭐ Favoritos</option><option value="Todos">Todos</option>';
+      uniqueCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+
+      // Forzar a "Generalistas" si no se estaba en Favoritos, o mantener Favoritos
+      if (select.value !== 'Favoritos' && uniqueCategories.includes('Generalistas')) {
+        select.value = 'Generalistas';
       } else {
-        openSetup(); 
+        select.value = 'Favoritos';
       }
+      
+      filterChannels();
     }
 
-    function processChannelsData(data) {
-      const grid = document.getElementById('channelsGrid');
-      try {
-        // Búsqueda robusta: España, Spain o el primer país del archivo
-        const spainData = data.countries.find(c => 
-          c.name.toLowerCase() === "españa" || 
-          c.name.toLowerCase() === "spain"
-        ) || data.countries[0];
+    function filterChannels() {
+      const select = document.getElementById('categorySelect');
+      const category = select.value;
+      const currentData = currentMode === 'tv' ? dataTV : dataRadio;
+      let filtered = [];
 
-        if (!spainData || !spainData.ambits) throw new Error('Formato de canales no reconocido.');
-
-        allChannels = [];
-
-        spainData.ambits.forEach(ambitObj => {
-          const ambitType = (ambitObj.ambit || '').toLowerCase();
-
-          // Asegurarse de que el ámbito tiene canales antes de procesarlo
-          if (ambitObj.channels) {
-            ambitObj.channels.forEach(ch => {
-              if (ch.options && ch.options.length > 0) {
-                const nameLower = ch.name.toLowerCase();
-                let category = 'generalistas';
-
-                if (ambitType === 'autonómico' || ambitType === 'autonomico') {
-                  category = 'autonomicos';
-                } else if (ambitType === 'local') {
-                  category = 'locales';
-                } else if (
-                  nameLower.includes('24h') || 
-                  nameLower.includes('info') || 
-                  nameLower.includes('euronews') || 
-                  nameLower.includes('324') ||
-                  nameLower.includes('noticias')
-                ) {
-                  category = 'informativos';
-                }
-
-                allChannels.push({
-                  name: ch.name,
-                  logo: ch.logo,
-                  url: ch.options[0].url,
-                  category: category
-                });
-              }
-            });
-          }
-        });
-
-        const allBtn = document.querySelector(".filter-btn");
-        filterChannels('todos', allBtn);
-
-      } catch (err) {
-        grid.innerHTML = `<div class="status-msg" style="color:#ff4444;">Error procesando canales: ${err.message}</div>`;
+      if (category === 'Favoritos') {
+        filtered = currentData.filter(ch => favorites.includes(ch.name));
+      } else if (category === 'Todos') {
+        filtered = currentData;
+      } else {
+        filtered = currentData.filter(ch => ch.category === category);
       }
+
+      renderChannels(filtered, category);
     }
 
-    function renderChannels(channels) {
+    function renderChannels(channels, currentCategory) {
       const grid = document.getElementById('channelsGrid');
       grid.innerHTML = '';
 
       if (channels.length === 0) {
-        grid.innerHTML = '<div class="status-msg">No hay canales en esta categoría.</div>';
+        const msg = currentCategory === 'Favoritos' 
+          ? 'No tienes canales favoritos guardados.' 
+          : 'No hay canales en esta categoría.';
+        grid.innerHTML = `<div class="status-msg">${msg}</div>`;
         return;
       }
       
       channels.forEach(ch => {
+        const isFav = favorites.includes(ch.name);
         const card = document.createElement('div');
         card.className = 'channel-card';
         card.onclick = () => playStream(ch.url);
+        
         card.innerHTML = `
-          <img src="${ch.logo}" alt="${ch.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/70x45?text=TV'">
+          <button class="fav-btn" onclick="toggleFav('${ch.name}', event)">
+            ${isFav ? '❤️' : '🤍'}
+          </button>
+          <img src="${ch.logo}" alt="${ch.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/70x45?text=MEDIA'">
           <span>${ch.name}</span>
         `;
         grid.appendChild(card);
       });
     }
 
-    function filterChannels(category, btnElement) {
-      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      if (btnElement) btnElement.classList.add('active');
-
-      if (category === 'todos') {
-        renderChannels(allChannels);
+    // --- SISTEMA DE FAVORITOS ---
+    function toggleFav(channelName, event) {
+      event.stopPropagation(); // Evitar que el clic en el corazón reproduzca el canal
+      
+      if (favorites.includes(channelName)) {
+        favorites = favorites.filter(name => name !== channelName);
       } else {
-        const filtered = allChannels.filter(ch => ch.category === category);
-        renderChannels(filtered);
+        favorites.push(channelName);
       }
+      
+      localStorage.setItem('tdtFavorites', JSON.stringify(favorites));
+      
+      // Re-renderizar para actualizar el corazón (y desaparecer si estamos en la pestaña Favoritos)
+      filterChannels();
     }
 
+    // --- REPRODUCTOR ---
     function playStream(url) {
       if (Hls.isSupported()) {
         if (hls) hls.destroy();
@@ -371,6 +487,7 @@
       }
     }
 
+    // Arrancar la App
     loadApp();
   </script>
 </body>
