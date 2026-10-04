@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="TDT Online">
   <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=TDT">
   
-  <title>TDT Online v3.3</title>
+  <title>TDT Online v3.4</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -185,7 +185,7 @@
     <div class="header">
       <h1>TDT Online</h1>
       <div class="header-actions">
-        <span class="version-badge">v3.3.0</span>
+        <span class="version-badge">v3.4.0</span>
         <button class="settings-btn" onclick="forceRefresh()" title="Forzar actualización de listas">🔄</button>
       </div>
     </div>
@@ -207,7 +207,7 @@
     </div>
 
     <div class="grid" id="channelsGrid">
-      <div class="status-msg" id="loadingMsg">Conectando con GitHub y descargando canales...</div>
+      <div class="status-msg" id="loadingMsg">Cargando canales desde tu repositorio...</div>
     </div>
   </div>
 
@@ -224,32 +224,30 @@
       const cachedTV = localStorage.getItem('tdtTV');
       const cachedRadio = localStorage.getItem('tdtRadio');
 
-      // Si ya tenemos caché en el dispositivo, los cargamos de inmediato sin esperar red
       if (cachedTV && cachedRadio) {
         dataTV = extractChannels(JSON.parse(cachedTV));
         dataRadio = extractChannels(JSON.parse(cachedRadio));
         switchMode(currentMode);
-        // Intentar actualizar en segundo plano silenciosamente
         updateDataBackground();
         return;
       }
 
-      // Si es la primera vez, descargamos automáticamente de GitHub Raw (Rama main)
       try {
-        document.getElementById('loadingMsg').textContent = "Descargando listas oficiales...";
+        document.getElementById('loadingMsg').textContent = "Cargando listas desde GitHub...";
         
+        // Petición directa a tus archivos alojados en GitHub Pages
         const [resTV, resRadio] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/LaQuay/TDTChannels/main/tv.json'),
-          fetch('https://raw.githubusercontent.com/LaQuay/TDTChannels/main/radio.json')
+          fetch('./tv.json'),
+          fetch('./radio.json').catch(() => ({ ok: false })) // Radio opcional por si no la subes
         ]);
 
-        if (!resTV.ok) throw new Error("No se pudo descargar TV");
+        if (!resTV.ok) throw new Error("No se pudo cargar tv.json desde tu repositorio");
         
         const jsonTV = await resTV.json();
         localStorage.setItem('tdtTV', JSON.stringify(jsonTV));
         dataTV = extractChannels(jsonTV);
 
-        if (resRadio.ok) {
+        if (resRadio && resRadio.ok) {
           const jsonRadio = await resRadio.json();
           localStorage.setItem('tdtRadio', JSON.stringify(jsonRadio));
           dataRadio = extractChannels(jsonRadio);
@@ -257,7 +255,7 @@
 
         switchMode(currentMode);
       } catch (err) {
-        document.getElementById('channelsGrid').innerHTML = `<div class="status-msg" style="color:#ff4444;">Error al conectar con GitHub. Comprueba tu conexión a internet.</div>`;
+        document.getElementById('channelsGrid').innerHTML = `<div class="status-msg" style="color:#ff4444;">Error: Asegúrate de haber subido el archivo <b>tv.json</b> a tu repositorio de GitHub. (${err.message})</div>`;
         console.error(err);
       }
     }
@@ -265,15 +263,15 @@
     async function updateDataBackground() {
       try {
         const [resTV, resRadio] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/LaQuay/TDTChannels/main/tv.json'),
-          fetch('https://raw.githubusercontent.com/LaQuay/TDTChannels/main/radio.json')
+          fetch('./tv.json'),
+          fetch('./radio.json').catch(() => ({ ok: false }))
         ]);
         if (resTV.ok) {
           const jsonTV = await resTV.json();
           localStorage.setItem('tdtTV', JSON.stringify(jsonTV));
           dataTV = extractChannels(jsonTV);
         }
-        if (resRadio.ok) {
+        if (resRadio && resRadio.ok) {
           const jsonRadio = await resRadio.json();
           localStorage.setItem('tdtRadio', JSON.stringify(jsonRadio));
           dataRadio = extractChannels(jsonRadio);
@@ -284,7 +282,7 @@
     }
 
     function forceRefresh() {
-      if (confirm("¿Quieres actualizar las listas de canales desde internet?")) {
+      if (confirm("¿Quieres actualizar las listas descargándolas de nuevo?")) {
         localStorage.removeItem('tdtTV');
         localStorage.removeItem('tdtRadio');
         location.reload();
@@ -321,7 +319,7 @@
       const currentData = mode === 'tv' ? dataTV : dataRadio;
       
       if (currentData.length === 0) {
-        document.getElementById('channelsGrid').innerHTML = `<div class="status-msg">No hay datos de ${mode.toUpperCase()}.</div>`;
+        document.getElementById('channelsGrid').innerHTML = `<div class="status-msg">No hay datos de ${mode.toUpperCase()} disponibles. Sube el archivo correspondiente a GitHub.</div>`;
         document.getElementById('categorySelect').innerHTML = '<option value="Favoritos">⭐ Favoritos</option>';
         return;
       }
