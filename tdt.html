@@ -27,7 +27,7 @@
       color: var(--text);
       margin: 0;
       padding: 20px;
-      padding-top: env(safe-area-inset-top, 20px); /* Respetar el notch en iOS */
+      padding-top: env(safe-area-inset-top, 20px);
     }
     .container {
       max-width: 1000px;
@@ -131,7 +131,6 @@
       width: 100%;
     }
     
-    /* Estilos del Modal de Configuración */
     #setupModal {
       display: none;
       position: fixed;
@@ -186,11 +185,10 @@
 </head>
 <body>
 
-  <!-- Modal de Configuración (Primer inicio o Actualización) -->
   <div id="setupModal">
     <div class="modal-content">
       <h2>Configuración de Canales</h2>
-      <p>1. Haz clic <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">AQUÍ</a> para abrir la lista oficial de canales.</p>
+      <p>1. Haz clic <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">AQUÍ</a> para abrir la lista oficial.</p>
       <p>2. Selecciona todo el texto de esa página (Cmd/Ctrl + A) y cópialo.</p>
       <p>3. Pega el contenido en la caja de abajo y pulsa Guardar.</p>
       
@@ -206,8 +204,8 @@
     <div class="header">
       <h1>TDT Online</h1>
       <div class="header-actions">
-        <span class="version-badge">v2.0.0</span>
-        <button class="settings-btn" onclick="openSetup()">⚙️</button>
+        <span class="version-badge">v2.1.0</span>
+        <button class="settings-btn" onclick="openSetup()" title="Actualizar canales">⚙️</button>
       </div>
     </div>
 
@@ -233,7 +231,6 @@
     const video = document.getElementById('videoPlayer');
     let hls = null;
 
-    // Lógica del Modal y LocalStorage
     function openSetup() {
       document.getElementById('setupModal').style.display = 'flex';
       document.getElementById('jsonError').style.display = 'none';
@@ -247,14 +244,12 @@
     function saveJSONData() {
       const rawText = document.getElementById('jsonInput').value.trim();
       try {
-        // Validar que es JSON real
         const parsed = JSON.parse(rawText);
         if (!parsed.countries) throw new Error("Falta la estructura correcta.");
         
-        // Guardar en la caché del navegador
         localStorage.setItem('tdtChannelsJSON', rawText);
         closeSetup();
-        document.getElementById('jsonInput').value = ''; // Limpiar caja
+        document.getElementById('jsonInput').value = ''; 
         processChannelsData(parsed);
       } catch (err) {
         document.getElementById('jsonError').style.display = 'block';
@@ -267,55 +262,61 @@
         try {
           processChannelsData(JSON.parse(cachedData));
         } catch (e) {
-          openSetup(); // Si la caché está corrupta, pedir de nuevo
+          openSetup(); 
         }
       } else {
-        openSetup(); // Si no hay datos, forzar configuración
+        openSetup(); 
       }
     }
 
-    // Lógica de procesamiento de canales
     function processChannelsData(data) {
       const grid = document.getElementById('channelsGrid');
       try {
-        const spainData = data.countries.find(c => c.name === "España");
-        if (!spainData) throw new Error('No se encontraron canales.');
+        // Búsqueda robusta: España, Spain o el primer país del archivo
+        const spainData = data.countries.find(c => 
+          c.name.toLowerCase() === "españa" || 
+          c.name.toLowerCase() === "spain"
+        ) || data.countries[0];
+
+        if (!spainData || !spainData.ambits) throw new Error('Formato de canales no reconocido.');
 
         allChannels = [];
 
         spainData.ambits.forEach(ambitObj => {
           const ambitType = (ambitObj.ambit || '').toLowerCase();
 
-          ambitObj.channels.forEach(ch => {
-            if (ch.options && ch.options.length > 0) {
-              const nameLower = ch.name.toLowerCase();
-              let category = 'generalistas';
+          // Asegurarse de que el ámbito tiene canales antes de procesarlo
+          if (ambitObj.channels) {
+            ambitObj.channels.forEach(ch => {
+              if (ch.options && ch.options.length > 0) {
+                const nameLower = ch.name.toLowerCase();
+                let category = 'generalistas';
 
-              if (ambitType === 'autonómico' || ambitType === 'autonomico') {
-                category = 'autonomicos';
-              } else if (ambitType === 'local') {
-                category = 'locales';
-              } else if (
-                nameLower.includes('24h') || 
-                nameLower.includes('info') || 
-                nameLower.includes('euronews') || 
-                nameLower.includes('324') ||
-                nameLower.includes('noticias')
-              ) {
-                category = 'informativos';
+                if (ambitType === 'autonómico' || ambitType === 'autonomico') {
+                  category = 'autonomicos';
+                } else if (ambitType === 'local') {
+                  category = 'locales';
+                } else if (
+                  nameLower.includes('24h') || 
+                  nameLower.includes('info') || 
+                  nameLower.includes('euronews') || 
+                  nameLower.includes('324') ||
+                  nameLower.includes('noticias')
+                ) {
+                  category = 'informativos';
+                }
+
+                allChannels.push({
+                  name: ch.name,
+                  logo: ch.logo,
+                  url: ch.options[0].url,
+                  category: category
+                });
               }
-
-              allChannels.push({
-                name: ch.name,
-                logo: ch.logo,
-                url: ch.options[0].url,
-                category: category
-              });
-            }
-          });
+            });
+          }
         });
 
-        // Activar botón "Todos" y renderizar
         const allBtn = document.querySelector(".filter-btn");
         filterChannels('todos', allBtn);
 
@@ -370,7 +371,6 @@
       }
     }
 
-    // Iniciar
     loadApp();
   </script>
 </body>
