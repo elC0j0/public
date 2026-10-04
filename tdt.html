@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>TDT iPad Completo</title>
+    
+    <!-- Librería para que los enlaces .m3u8 funcionen en el ordenador -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        #player-container {
+            position: sticky;
+            top: 0;
+            background: #000;
+            padding: 10px;
+            z-index: 100;
+            border-bottom: 2px solid #333;
+        }
+        video {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+        }
+        #loading {
+            margin: 20px;
+            font-size: 18px;
+            color: #888;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .channel-btn {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 110px;
+            transition: background 0.2s;
+        }
+        .channel-btn:hover {
+            background: #333;
+        }
+        .channel-btn img {
+            max-width: 60px;
+            max-height: 40px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+        .channel-btn span {
+            font-size: 13px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="player-container">
+        <video id="player" controls autoplay playsinline></video>
+    </div>
+    
+    <div id="loading">Cargando cientos de canales desde TDTChannels...</div>
+    <div class="grid" id="channels"></div>
+
+    <script>
+        var video = document.getElementById('player');
+        var hls = null; 
+
+        // Función universal para reproducir (Ordenador + iPad)
+        function playChannel(url) {
+            // Lógica para ordenadores (Chrome, Firefox, Edge)
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                if (hls) { hls.destroy(); } 
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } 
+            // Lógica para el iPad 4 (Safari en iOS 10)
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play();
+            } else {
+                alert("Tu navegador no soporta la reproducción de este canal.");
+            }
+        }
+
+        // Leer la lista oficial completa de TDTChannels desde GitHub
+        fetch('https://raw.githubusercontent.com/tdtchannels/TDTChannels-APP/main/tv.m3u8')
+            .then(function(response) { return response.text(); })
+            .then(function(text) {
+                document.getElementById('loading').style.display = 'none';
+                var lines = text.split('\n');
+                var grid = document.getElementById('channels');
+                var currentName = '';
+                var currentLogo = '';
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i].trim();
+                    
+                    // Extraer los metadatos (nombre y logo)
+                    if (line.indexOf('#EXTINF') === 0) {
+                        var parts = line.split(',');
+                        currentName = parts[parts.length - 1]; // El nombre está al final de la coma
+                        
+                        var logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                        currentLogo = logoMatch ? logoMatch[1] : '';
+                    } 
+                    // Si la línea es un enlace de reproducción, crear el botón
+                    else if (line.indexOf('http') === 0) {
+                        var btn = document.createElement('button');
+                        btn.className = 'channel-btn';
+                        
+                        // Asignar el enlace al botón aislando la variable con una función
+                        btn.onclick = (function(url) {
+                            return function() { playChannel(url); };
+                        })(line);
+                        
+                        var content = '';
+                        if (currentLogo) {
+                            content += '<img src="' + currentLogo + '" alt="logo" onerror="this.style.display=\'none\'">';
+                        }
+                        content += '<span>' + currentName + '</span>';
+                        btn.innerHTML = content;
+                        
+                        grid.appendChild(btn);
+                    }
+                }
+            })
+            .catch(function(err) {
+                document.getElementById('loading').innerText = 'Error al cargar los canales. Verifica tu conexión.';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
