@@ -126,14 +126,13 @@
   <div class="container">
     <div class="header">
       <h1>TDT Online</h1>
-      <span class="version-badge">v1.2.0</span>
+      <span class="version-badge">v1.4.0</span>
     </div>
 
     <div class="player-container">
       <video id="videoPlayer" controls autoplay playsinline></video>
     </div>
 
-    <!-- Filtros de categoría -->
     <div class="controls" id="categoryFilters">
       <button class="filter-btn active" onclick="filterChannels('todos', this)">Todos</button>
       <button class="filter-btn" onclick="filterChannels('generalistas', this)">Generalistas</button>
@@ -143,7 +142,7 @@
     </div>
 
     <div class="grid" id="channelsGrid">
-      <div class="status-msg">Cargando canales...</div>
+      <div class="status-msg">Cargando canales desde GitHub...</div>
     </div>
   </div>
 
@@ -152,28 +151,20 @@
     const video = document.getElementById('videoPlayer');
     let hls = null;
 
-    // Estrategia combinada: Fuentes directas sin CORS + Proxies de respaldo
     async function fetchJSONData() {
-      const sources = [
-        // 1. Intentar Proxy alternativo menos restrictivo
-        'https://corsproxy.io/?https://www.tdtchannels.com/api/channels.json',
-        // 2. Proxies tradicionales (por si Cloudflare los libera)
-        'https://api.allorigins.win/raw?url=https://www.tdtchannels.com/api/channels.json',
-        'https://api.codetabs.com/v1/proxy?quest=https://www.tdtchannels.com/api/channels.json'
-      ];
+      // Conexión directa al repositorio RAW de GitHub (Sin CORS ni Cloudflare)
+      const url = 'https://raw.githubusercontent.com/LaQuay/TDTChannels/master/channels.json';
 
-      for (const url of sources) {
-        try {
-          console.log("Intentando cargar desde:", url);
-          const res = await fetch(url, { cache: "no-store" });
-          if (res.ok) {
-            return await res.json();
-          }
-        } catch (err) {
-          console.warn(`Fallo en la fuente: ${url}`, err);
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.ok) {
+          return await res.json();
+        } else {
+          throw new Error(`Error HTTP: ${res.status}`);
         }
+      } catch (err) {
+        throw new Error('Fallo al conectar con el repositorio de GitHub.');
       }
-      throw new Error('Todos los endpoints rechazaron la petición. Posible bloqueo temporal de Cloudflare.');
     }
 
     async function loadTDTChannels() {
@@ -182,7 +173,7 @@
         const data = await fetchJSONData();
         
         const spainData = data.countries.find(c => c.name === "España");
-        if (!spainData) throw new Error('No se encontraron canales.');
+        if (!spainData) throw new Error('No se encontraron canales de España en el JSON.');
 
         allChannels = [];
 
@@ -220,7 +211,7 @@
 
         renderChannels(allChannels);
       } catch (err) {
-        grid.innerHTML = `<div class="status-msg" style="color:#ff4444;">Error al cargar los canales. (${err.message})</div>`;
+        grid.innerHTML = `<div class="status-msg" style="color:#ff4444;">Error: ${err.message}</div>`;
         console.error(err);
       }
     }
