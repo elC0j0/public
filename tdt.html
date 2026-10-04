@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- Etiquetas PWA para iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TDT Online">
   <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192.png?text=TDT">
   
-  <title>TDT Online v3</title>
+  <title>TDT Online v3.1</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     :root {
@@ -34,7 +33,6 @@
       margin: 0 auto;
     }
     
-    /* Header y Navegación */
     .header {
       display: flex;
       justify-content: space-between;
@@ -67,7 +65,6 @@
       color: #888;
     }
 
-    /* Controles (Modo y Categorías) */
     .controls-bar {
       display: flex;
       gap: 10px;
@@ -106,7 +103,6 @@
       min-width: 150px;
     }
 
-    /* Reproductor */
     .player-container {
       width: 100%;
       background: #000;
@@ -121,7 +117,6 @@
       display: block;
     }
 
-    /* Grid y Tarjetas */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -159,7 +154,6 @@
       width: 100%;
     }
     
-    /* Botón de Favorito */
     .fav-btn {
       position: absolute;
       top: 4px;
@@ -184,7 +178,6 @@
       color: #aaa;
     }
 
-    /* Modal de Configuración */
     #setupModal {
       display: none;
       position: fixed;
@@ -242,18 +235,18 @@
 </head>
 <body>
 
-  <!-- Modal de Configuración (TV y Radio) -->
   <div id="setupModal">
     <div class="modal-content">
       <h2>Configuración de Base de Datos</h2>
-      <p style="font-size: 0.9rem; color: #ccc;">Para evitar bloqueos, copia el texto de las listas oficiales.</p>
+      <p style="font-size: 0.9rem; color: #ccc;">Abre los enlaces, pulsa "Seleccionar todo" (Cmd/Ctrl + A), copia y pega abajo.</p>
       
       <div id="jsonError" class="error-msg">Error: Revisa que ambos textos sean JSON válidos.</div>
       
-      <label style="font-size: 0.9rem;">1. Copia el texto de <a href="https://www.tdtchannels.com/lists/tv.json" target="_blank">TV.json</a> aquí:</label>
+      <!-- Enlaces corregidos directamente al RAW de GitHub -->
+      <label style="font-size: 0.9rem;">1. Copia el texto crudo de <a href="https://raw.githubusercontent.com/LaQuay/TDTChannels/master/tv.json" target="_blank">TV.json</a> aquí:</label>
       <textarea id="jsonInputTV" placeholder='Pega el contenido de la Televisión...'></textarea>
       
-      <label style="font-size: 0.9rem;">2. Copia el texto de <a href="https://www.tdtchannels.com/lists/radio.json" target="_blank">RADIO.json</a> aquí (Opcional):</label>
+      <label style="font-size: 0.9rem;">2. Copia el texto crudo de <a href="https://raw.githubusercontent.com/LaQuay/TDTChannels/master/radio.json" target="_blank">RADIO.json</a> aquí (Opcional):</label>
       <textarea id="jsonInputRadio" placeholder='Pega el contenido de la Radio...'></textarea>
       
       <button class="save-btn" onclick="saveJSONData()">Guardar y Cargar</button>
@@ -265,7 +258,7 @@
     <div class="header">
       <h1>TDT Online</h1>
       <div class="header-actions">
-        <span class="version-badge">v3.0.0</span>
+        <span class="version-badge">v3.1.0</span>
         <button class="settings-btn" onclick="openSetup()" title="Actualizar listas">⚙️</button>
       </div>
     </div>
@@ -283,7 +276,6 @@
       <select id="categorySelect" class="category-select" onchange="filterChannels()">
         <option value="Favoritos">⭐ Favoritos</option>
         <option value="Todos">Todos</option>
-        <!-- Las categorías oficiales se inyectarán aquí -->
       </select>
     </div>
 
@@ -293,7 +285,7 @@
   </div>
 
   <script>
-    let currentMode = 'tv'; // 'tv' o 'radio'
+    let currentMode = 'tv'; 
     let dataTV = [];
     let dataRadio = [];
     let favorites = JSON.parse(localStorage.getItem('tdtFavorites')) || [];
@@ -301,7 +293,6 @@
     const video = document.getElementById('videoPlayer');
     let hls = null;
 
-    // --- SISTEMA DE CONFIGURACIÓN ---
     function openSetup() {
       document.getElementById('setupModal').style.display = 'flex';
       document.getElementById('jsonError').style.display = 'none';
@@ -331,7 +322,7 @@
         closeSetup();
         document.getElementById('jsonInputTV').value = ''; 
         document.getElementById('jsonInputRadio').value = '';
-        loadApp(); // Recargar datos en memoria
+        loadApp(); 
       } catch (err) {
         document.getElementById('jsonError').style.display = 'block';
       }
@@ -349,10 +340,9 @@
       if (cachedTV) dataTV = extractChannels(JSON.parse(cachedTV));
       if (cachedRadio) dataRadio = extractChannels(JSON.parse(cachedRadio));
 
-      switchMode(currentMode); // Renderizar modo actual
+      switchMode(currentMode); 
     }
 
-    // --- PROCESAMIENTO DE DATOS ---
     function extractChannels(data) {
       const spainData = data.countries.find(c => c.name.toLowerCase() === "españa" || c.name.toLowerCase() === "spain") || data.countries[0];
       if (!spainData || !spainData.ambits) return [];
@@ -366,7 +356,7 @@
                 name: ch.name,
                 logo: ch.logo,
                 url: ch.options[0].url,
-                category: ambitObj.name || ambitObj.ambit // Extraer nombre oficial de categoría
+                category: ambitObj.name || ambitObj.ambit 
               });
             }
           });
@@ -375,7 +365,6 @@
       return parsedList;
     }
 
-    // --- INTERFAZ Y RENDERIZADO ---
     function switchMode(mode) {
       currentMode = mode;
       document.getElementById('btnTV').classList.toggle('active', mode === 'tv');
@@ -389,7 +378,6 @@
         return;
       }
 
-      // Extraer categorías únicas manteniendo el orden oficial
       const select = document.getElementById('categorySelect');
       const uniqueCategories = [...new Set(currentData.map(ch => ch.category))];
       
@@ -401,7 +389,6 @@
         select.appendChild(option);
       });
 
-      // Forzar a "Generalistas" si no se estaba en Favoritos, o mantener Favoritos
       if (select.value !== 'Favoritos' && uniqueCategories.includes('Generalistas')) {
         select.value = 'Generalistas';
       } else {
@@ -457,9 +444,8 @@
       });
     }
 
-    // --- SISTEMA DE FAVORITOS ---
     function toggleFav(channelName, event) {
-      event.stopPropagation(); // Evitar que el clic en el corazón reproduzca el canal
+      event.stopPropagation(); 
       
       if (favorites.includes(channelName)) {
         favorites = favorites.filter(name => name !== channelName);
@@ -468,12 +454,9 @@
       }
       
       localStorage.setItem('tdtFavorites', JSON.stringify(favorites));
-      
-      // Re-renderizar para actualizar el corazón (y desaparecer si estamos en la pestaña Favoritos)
       filterChannels();
     }
 
-    // --- REPRODUCTOR ---
     function playStream(url) {
       if (Hls.isSupported()) {
         if (hls) hls.destroy();
@@ -487,7 +470,6 @@
       }
     }
 
-    // Arrancar la App
     loadApp();
   </script>
 </body>
